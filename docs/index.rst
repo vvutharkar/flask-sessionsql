@@ -1,9 +1,10 @@
 Flask-Session
 =============
 
-.. module:: flask.ext.session
+.. module:: flask.ext.sessionsql
 
-Welcome to Flask-Session's documentation.  Flask-Session is an extension for
+Welcome to Flask-SessionSql's documentation.  Flask-SessionSql is an extension
+ for
 `Flask`_ that adds support for Server-side ``Session`` to your application.
 Flask 0.8 or newer is required, if you are using an older version, check
 `Support for Old and New Sessions`_ out.
@@ -22,11 +23,11 @@ Installation
 
 Install the extension with the following command::
 
-    $ easy_install Flask-Session
+    $ easy_install Flask-SessionSql
 
 or alternatively if you have pip installed::
     
-    $ pip install Flask-Session
+    $ pip install Flask-SessionSql
 
 Quickstart
 ----------

@@ -3,16 +3,16 @@
     Hello
     ~~~~~
 
-    Flask-Session demo.
+    Flask-SessionSql demo.
 
-    :copyright: (c) 2014 by Shipeng Feng.
+    :copyright: (c) 2014 by Viswa Vutharkar.
     :license: BSD, see LICENSE for more details.
 """
 from flask import Flask, session
 from flask.ext.session import Session
 
 
-SESSION_TYPE = 'redis'
+SESSION_TYPE = 'flask-sqlalchemy'
 
 
 app = Flask(__name__)

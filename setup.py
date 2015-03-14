@@ -1,30 +1,26 @@
 """
-Flask-Session
+Flask-SessionSql
 -------------
 
-Flask-Session is an extension for Flask that adds support for 
-Server-side Session to your application.
-
-Links
-`````
-
-* `development version
-  <https://github.com/fengsp/flask-session/zipball/master#egg=Flask-dev>`_
+Flask-SessionSql is an extension for Flask that adds support for
+Server-side Session to your application where the persistence backend
+is the FlaskSQLAlchemy.
 
 """
 from setuptools import setup
 
 
 setup(
-    name='Flask-Session',
+    name='Flask-SessionSql',
     version='0.1.1',
-    url='https://github.com/fengsp/flask-session',
+    url='https://github.com/vvutharkar/flask-sessionsql',
     license='BSD',
-    author='Shipeng Feng',
-    author_email='fsp261@gmail.com',
-    description='Adds server-side session support to your Flask application',
+    author='Viswa Vutharkar',
+    author_email='vutharkar@gmail.com',
+    description='Adds server-side session support to your Flask application '
+                'with Flask-SQLAlchemy as the persistence mechanism ',
     long_description=__doc__,
-    packages=['flask_session'],
+    packages=['flask_sessionsql'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',

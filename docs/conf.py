@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Flask-Session documentation build configuration file, created by
+# Flask-Sessionsql documentation build configuration file, created by
 # sphinx-quickstart on Fri Apr 25 19:56:40 2014.
 #
 # This file is execfile()d with the current directory set to its
@@ -44,8 +44,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Flask-Session'
-copyright = u'2014, Shipeng Feng'
+project = u'Flask-SessionSql'
+copyright = u'2015, Viswa Vutharkar'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
