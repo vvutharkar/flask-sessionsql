@@ -84,59 +84,61 @@ class FlaskSQLAlchemySessionInterface(SessionInterface):
 
     def open_session(self, app, request):
         sid = request.cookies.get(app.session_cookie_name)
-        if not sid:
-            sid = self._generate_sid()
-            return self.session_class(sid=sid)
-        session_id = self.key_prefix + sid
-        record = self.sql_session_model.query.filter_by(
-            session_id=session_id).first()
+        if sid:
+            session_id = self.key_prefix + sid
+            saved_session = self.sql_session_model.query.filter_by(
+                session_id=session_id).first()
+            if saved_session:
+                if saved_session.expiry > datetime.utcnow():
+                    try:
+                        val = saved_session.data
+                        data = self.serializer.loads(str(val))
 
-        sql_session = record if record and record.expiry > datetime.utcnow()\
-            else None
+                        return self.session_class(data, sid=sid)
 
-        if sql_session is not None:
-            try:
-                val = sql_session.data
-                data = self.serializer.loads(val)
-                return self.session_class(data, sid=sid)
-            except:
-                return self.session_class(sid=sid)
+                    except Exception as e:
+                        print "some exception %s" % e.message
+                        self.db.delete(saved_session)
+                        self.db.session.commit()
+                else:
+                    # saved session expired. Delete it
+                    self.db.delete(saved_session)
+                    self.db.session.commit()
+
+        sid = self._generate_sid()
         return self.session_class(sid=sid)
 
     def save_session(self, app, session, response):
         domain = self.get_cookie_domain(app)
         path = self.get_cookie_path(app)
-        if not session:
-            if session.modified:
-                session_id = self.key_prefix + session.sid
-                sql_session = self.sql_session_model.query.filter_by(
-                    session_id=session_id).first()
 
-                self.db.delete(sql_session)
-                response.delete_cookie(app.session_cookie_name,
-                                       domain=domain, path=path)
+        if not session:
+            response.delete_cookie(app.session_cookie_name, domain=domain)
             return
 
-        # Modification case.  There are upsides and downsides to
-        # emitting a set-cookie header each request.  The behavior
-        # is controlled by the :meth:`should_set_cookie` method
-        # which performs a quick check to figure out if the cookie
-        # should be set or not.  This is controlled by the
-        # SESSION_REFRESH_EACH_REQUEST config flag as well as
-        # the permanent flag on the session itself.
-        #if not self.should_set_cookie(app, session):
-        #    return
-
+        session_id = self.key_prefix + session.sid
         httponly = self.get_cookie_httponly(app)
         secure = self.get_cookie_secure(app)
-        expires = self.get_expiration_time(app, session)
+        new_expiry = self.get_expiration_time(app, session)
         val = self.serializer.dumps(dict(session))
 
-        sql_session = self.sql_session_model(self.key_prefix + session.sid,
-                                             val, expires)
-        self.db.session.add(sql_session)
-        self.db.session.commit()
+        saved_session = self.sql_session_model.query.filter_by(
+            session_id=session_id).first()
 
+        if saved_session:
+            if session.modified:
+                # update the saved session only if session
+                # was modified since last save
+                saved_session.data = val
+                saved_session.expiry = new_expiry
+                self.db.session.commit()
+        else:
+            # create new session object
+            new_session = self.sql_session_model(session_id, val, new_expiry)
+            self.db.session.add(new_session)
+            self.db.session.commit()
+
+        session.modified = False
         response.set_cookie(app.session_cookie_name, session.sid,
-                            expires=expires, httponly=httponly,
+                            expires=new_expiry, httponly=httponly,
                             domain=domain, path=path, secure=secure)

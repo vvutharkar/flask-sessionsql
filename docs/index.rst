@@ -32,7 +32,7 @@ or alternatively if you have pip installed::
 Quickstart
 ----------
 
-Flask-Session is really easy to use.
+Flask-SessionSql is really easy to use.
 
 Basically for the common use of having one Flask application all you have to
 do is to create your Flask application, load the configuration of choice and
@@ -46,7 +46,13 @@ The ``Session`` instance is not used for direct access, you should always use
 
     app = Flask(__name__)
     # Check Configuration section for more details
-    SESSION_TYPE = 'redis'
+    SESSION_TYPE = 'flask-sqlalchemy'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/test.db'
+    SQLALCHEMY_ECHO = False
+    SECRET_KEY = \
+            '\xfb\x12\xdf\xa1@i\xd6>V\xc0\xbb\x8fp\x16#Z\x0b\x81\xeb\x16'
+    DEBUG = True
+
     app.config.from_object(__name__)
     Session(app)
 
@@ -68,19 +74,11 @@ method::
 Configuration
 -------------
 
-The following configuration values exist for Flask-Session.  Flask-Session
-loads these values from your Flask application config, so you should configure
-your app first before you pass it to Flask-Session.  Note that these values
-cannot be modified after the ``init_app`` was applyed so make sure to not
-modify them at runtime.
-
-We are not supplying something like ``SESSION_REDIS_HOST`` and 
-``SESSION_REDIS_PORT``, if you want to use the ``RedisSessionInterface``,
-you should configure ``SESSION_REDIS`` to your own ``redis.Redis`` instance,
-or ``redis.StrictRedis`` if you prefer so.  This gives you more flexibility,
-like maybe you want to use the same ``redis.Redis`` instance for cache purpose
-too, then you do not need to keep two ``redis.Redis`` instance in the same
-process.
+The following configuration values exist for Flask-SessionSql.
+Flask-SessionSql loads these values from your Flask application config, so you
+should configure your app first before you pass it to Flask-SessionSql.  Note
+that these values cannot be modified after the ``init_app`` was applyed so
+make sure to not modify them at runtime.
 
 The following configuration values are builtin configuration values within
 Flask itself that are related to session.  **They are all understood by 
@@ -116,38 +114,19 @@ A list of configuration keys also understood by the extension:
                               use.  Built-in session types:
 
                               - **null**: NullSessionInterface (default)
-                              - **redis**: RedisSessionInterface
-                              - **memcached**: MemcachedSessionInterface
-                              - **filesystem**: FileSystemSessionInterface
-                              - **mongodb**: MongoDBSessionInterface
-``SESSION_KEY_PREFIX``        A prefix that is added before all session keys.
-                              This makes it possible to use the same backend
-                              storage server for different apps, default 
-                              "session:"
-``SESSION_REDIS``             A ``redis.Redis`` instance, default connect to
-                              ``127.0.0.1:6379``
-``SESSION_MEMCACHED``         A ``memcache.Client`` instance, default connect
-                              to ``127.0.0.1:11211``
-``SESSION_FILE_DIR``          The directory where session files are stored.
-                              Default to use `flask_session` directory under
-                              current working directory.
-``SESSION_FILE_THRESHOLD``    The maximum number of items the session stores
-                              before it starts deleting some, default 500
-``SESSION_FILE_MODE``         The file mode wanted for the session files,
-                              default 0600
-``SESSION_MONGODB``           A ``pymongo.MongoClient`` instance, default
-                              connect to ``127.0.0.1:27017``
-``SESSION_MONGODB_DB``        The MongoDB database you want to use, default
-                              "flask_session"
-``SESSION_MONGODB_COLLECT``   The MongoDB collection you want to use, default
-                              "sessions"
+                              - **flask-sqlalchemy**:
+                              FlaskSQLAlchemySEssionInterface
+``SQLALCHEMY_DATABASE_URI``   Database connection string
+
+``SQLALCHEMY_ECHO``           See Sql Alchemy doc
+
 ============================= ==============================================
 
 Basically you only need to configure ``SESSION_TYPE``.
 
 .. note::
     
-    All non-null sessions in Flask-Session are permanent.
+    All non-null sessions in Flask-SessionSql are permanent.
 
 Built-in Session Interfaces
 ---------------------------
@@ -159,62 +138,3 @@ If you do not configure a different ``SESSION_TYPE``, this will be used to
 generate nicer error messages.  Will allow read-only access to the empty
 session but fail on setting.
 
-:class:`RedisSessionInterface`
-``````````````````````````````
-
-Uses the Redis key-value store as a session backend. (`redis-py`_ required)
-
-Relevant configuration values:
-
-- SESSION_REDIS
-
-:class:`MemcachedSessionInterface`
-``````````````````````````````````
-
-Uses the Memcached as a session backend. (`pylibmc`_ or `memcache`_ required)
-
-- SESSION_MEMCACHED
-
-:class:`FileSystemSessionInterface`
-```````````````````````````````````
-
-Uses the :class:`werkzeug.contrib.cache.FileSystemCache` as a session backend.
-
-- SESSION_FILE_DIR
-- SESSION_FILE_THRESHOLD
-- SESSION_FILE_MODE
-
-:class:`MongoDBSessionInterface`
-````````````````````````````````
-
-Uses the MongoDB as a session backend. (`pymongo`_ required)
-
-- SESSION_MONGODB
-- SESSION_MONGODB_DB
-- SESSION_MONGODB_COLLECT
-
-.. _redis-py: https://github.com/andymccurdy/redis-py
-.. _pylibmc: http://sendapatch.se/projects/pylibmc/
-.. _memcache: https://github.com/linsomniac/python-memcached
-.. _pymongo: http://api.mongodb.org/python/current/index.html
-
-API
----
-
-.. autoclass:: Session
-   :members: init_app
-
-.. autoclass:: flask.ext.session.sessions.ServerSideSession
-   
-   .. attribute:: sid
-       
-       Session id, internally we use :func:`uuid.uuid4` to generate one 
-       session id. You can access it with ``session.sid``.
-
-.. autoclass:: NullSessionInterface
-.. autoclass:: RedisSessionInterface
-.. autoclass:: MemcachedSessionInterface
-.. autoclass:: FileSystemSessionInterface
-.. autoclass:: MongoDBSessionInterface
-
-.. include:: ../CHANGES

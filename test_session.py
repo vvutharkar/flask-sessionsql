@@ -1,7 +1,7 @@
 import unittest
 
 import flask
-from flask.ext.session import Session
+from flask.ext.sessionsql import Session
 
 
 class FlaskSessionTestCase(unittest.TestCase):
@@ -32,6 +32,8 @@ class FlaskSessionTestCase(unittest.TestCase):
         app.config['DEBUG'] = True
 
         Session(app)
+
+        print app.session_interface.__class__.__name__
         @app.route('/set', methods=['POST'])
         def set():
             flask.session['value'] = flask.request.form['value']
@@ -41,7 +43,8 @@ class FlaskSessionTestCase(unittest.TestCase):
             return flask.session['value']
 
         c = app.test_client()
-        self.assertEqual(c.post('/set', data={'value': '42'}).data, b'value set')
+        self.assertEqual(c.post('/set', data={'value': '42'}).data, b'value '
+                                                                    b'set')
         self.assertEqual(c.get('/get').data, b'42')
 
 
